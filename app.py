@@ -108,7 +108,7 @@ def main():
     st.sidebar.markdown("### 👨‍💻 Author Information")
     st.sidebar.markdown("**Author:** Baoyi Zhou")
     st.sidebar.markdown("**Email:** baoyi.zhou@efrei.net")
-    st.sidebar.markdown("**GitHub:** baoyi11")
+    st.sidebar.markdown("**GitHub:** https://github.com/baoyi11/Capital-Bikes-Share-Data-Analysis")
     st.sidebar.markdown("**Data Source:** [Capital Bikeshare System Data](https://capitalbikeshare.com/system-data)") 
     # 添加两张图片作为logo
     col1, col2 = st.sidebar.columns(2)
