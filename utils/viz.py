@@ -8,6 +8,7 @@ from plotly.subplots import make_subplots
 
 def create_kpi_metrics(df):
     """创建关键绩效指标"""
+    """Create key performance indicators"""
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -30,6 +31,7 @@ def create_kpi_metrics(df):
 
 def create_time_series_chart(df, frequency='hourly'):
     """基于频率创建时间序列图表"""
+    """Create time series chart based on frequency"""
     
     if frequency == 'hourly':
         data = df.groupby(['hour', 'member_casual']).size().reset_index(name='count')
@@ -62,9 +64,9 @@ def create_time_series_chart(df, frequency='hourly'):
                     labels={'month': 'Month', 'count': 'Number of Rides'})
     
     elif frequency == 'rolling_average':
-        # 滚动平均图表
+        # 滚动平均图表 Rolling average chart
         daily_data = df.groupby(['date', 'member_casual']).size().reset_index(name='count')
-        # 计算7天滚动平均
+        # 计算7天滚动平均 7-day rolling average
         daily_pivot = daily_data.pivot(index='date', columns='member_casual', values='count').fillna(0)
         rolling_avg = daily_pivot.rolling(window=7, min_periods=1).mean().reset_index()
         rolling_avg = pd.melt(rolling_avg, id_vars=['date'], value_name='count', var_name='member_casual')
@@ -74,7 +76,7 @@ def create_time_series_chart(df, frequency='hourly'):
                      labels={'date': 'Date', 'count': 'Number of Rides'})
     
     else:
-        # 默认图表
+        # 默认图表 Default chart
         overall_data = df.groupby('member_casual').size().reset_index(name='count')
         fig = px.bar(overall_data, x='member_casual', y='count',
                     title='Overall Usage by User Type',
@@ -85,16 +87,17 @@ def create_time_series_chart(df, frequency='hourly'):
 
 def create_heatmap_analysis(df, heatmap_type='hour_weekday'):
     """创建热力图分析"""
+    """Create heatmap analysis"""
     
     if heatmap_type == 'hour_weekday':
-        # 小时-星期热力图
+        # 小时-星期热力图 Hour vs Weekday heatmap
         df_heatmap = df.copy()
-        # 确保星期顺序正确
+        # 确保星期顺序正确 ensure correct weekday order
         weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         df_heatmap['day_of_week'] = pd.Categorical(df_heatmap['day_of_week'], 
                                                  categories=weekday_order, ordered=True)
         
-        # 创建交叉表：小时 vs 星期
+        # 创建交叉表：小时 vs 星期 create crosstab: hour vs weekday
         heatmap_data = pd.crosstab(df_heatmap['hour'], df_heatmap['day_of_week'])
         
         fig = px.imshow(heatmap_data,
@@ -103,14 +106,14 @@ def create_heatmap_analysis(df, heatmap_type='hour_weekday'):
                        aspect="auto",
                        color_continuous_scale='Viridis')
         
-        # 添加注释文本
+        # 添加注释文本 add annotation text
         fig.update_traces(text=heatmap_data.values, texttemplate="%{text}")
         
     elif heatmap_type == 'member_casual_hourly':
-        # 用户类型-小时热力图
+        # 用户类型-小时热力图 User Type vs Hour heatmap
         heatmap_data = df.groupby(['hour', 'member_casual']).size().unstack(fill_value=0)
         
-        fig = px.imshow(heatmap_data.T,  # 转置以便更好的显示
+        fig = px.imshow(heatmap_data.T,  # 转置以便更好的显示 transpose for better display
                        title='Ride Frequency: User Type vs Hour of Day',
                        labels=dict(x="Hour of Day", y="User Type", color="Number of Rides"),
                        aspect="auto",
@@ -119,9 +122,9 @@ def create_heatmap_analysis(df, heatmap_type='hour_weekday'):
         fig.update_traces(text=heatmap_data.T.values, texttemplate="%{text}")
     
     elif heatmap_type == 'station_popularity':
-        # 站点热度热力图（基于地理坐标）
+        # 站点热度热力图（基于地理坐标） Station popularity heatmap (based on geographic coordinates)
         station_usage = df.groupby(['start_station_name', 'start_lat', 'start_lng']).size().reset_index(name='count')
-        station_usage = station_usage.dropna().nlargest(50, 'count')  # 取前50个最繁忙站点
+        station_usage = station_usage.dropna().nlargest(50, 'count')  # 取前50个最繁忙站点 Take top 50 busiest stations
         
         fig = px.density_mapbox(station_usage, 
                                lat='start_lat', 
@@ -138,7 +141,7 @@ def create_heatmap_analysis(df, heatmap_type='hour_weekday'):
         fig.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
     
     else:
-        # 默认热力图：月份-星期
+        # 默认热力图：月份-星期 Month vs Day of Week heatmap
         monthly_data = df.groupby(['month', 'day_of_week']).size().unstack(fill_value=0)
         fig = px.imshow(monthly_data,
                        title='Ride Frequency: Month vs Day of Week',
@@ -152,8 +155,8 @@ def create_member_comparison_chart(df, chart_type='ride_duration'):
     """创建会员和临时用户的对比图表"""
     
     if chart_type == 'ride_duration':
-        # 过滤极端值以便更好可视化
-        temp_df = df[df['ride_duration_minutes'] <= 120]  # 限制在2小时内
+        # 过滤极端值以便更好可视化 filter extreme values for better visualization
+        temp_df = df[df['ride_duration_minutes'] <= 120]  # 限制在2小时内 within 2 hours
         fig = px.box(temp_df, x='member_casual', y='ride_duration_minutes',
                     title='Ride Duration Distribution by User Type',
                     labels={'member_casual': 'User Type', 'ride_duration_minutes': 'Duration (minutes)'})
@@ -168,7 +171,7 @@ def create_member_comparison_chart(df, chart_type='ride_duration'):
     
     elif chart_type == 'usage_by_time':
         time_data = df.groupby(['time_of_day', 'member_casual']).size().reset_index(name='count')
-        # 确保时间顺序正确
+        # 确保时间顺序正确 ensure correct time order
         time_order = ['Early Morning (12-6am)', 'Morning (6-12pm)', 'Afternoon (12-6pm)', 'Evening (6-12am)']
         time_data['time_of_day'] = pd.Categorical(time_data['time_of_day'], categories=time_order, ordered=True)
         time_data = time_data.sort_values('time_of_day')
@@ -179,16 +182,16 @@ def create_member_comparison_chart(df, chart_type='ride_duration'):
                     labels={'time_of_day': 'Time of Day', 'count': 'Number of Rides'})
     
     elif chart_type == 'distance_analysis':
-        # 距离分析图表
-        # 过滤有效距离数据
-        temp_df = df[(df['distance_km'] > 0) & (df['distance_km'] <= 10)]  # 限制在10公里内
+        # 距离分析图表 Distance analysis chart
+        # 过滤有效距离数据 filter valid distance data
+        temp_df = df[(df['distance_km'] > 0) & (df['distance_km'] <= 10)]  # 限制在10公里内 within 10 km
         fig = px.box(temp_df, x='member_casual', y='distance_km',
                     title='Ride Distance Distribution by User Type',
                     labels={'member_casual': 'User Type', 'distance_km': 'Distance (km)'})
         fig.update_yaxes(range=[0, 10])
     
     else:
-        # 默认图表，防止未定义的情况
+        # 默认图表，防止未定义的情况 default chart to prevent undefined case
         default_data = df['member_casual'].value_counts().reset_index()
         default_data.columns = ['member_casual', 'count']
         fig = px.pie(default_data, values='count', names='member_casual',
@@ -199,10 +202,11 @@ def create_member_comparison_chart(df, chart_type='ride_duration'):
 
 def create_ride_duration_analysis(df, chart_type='distribution'):
     """分析骑行时长模式"""
+    """Analyze ride duration patterns"""
     
     if chart_type == 'distribution':
-        # 创建骑行时长直方图
-        fig = px.histogram(df[df['ride_duration_minutes'] <= 120],  # 限制在2小时内以便清晰显示
+        # 创建骑行时长直方图 Ride duration histogram
+        fig = px.histogram(df[df['ride_duration_minutes'] <= 120],  # 限制在2小时内以便清晰显示 within 2 hours for clarity
                           x='ride_duration_minutes', 
                           color='member_casual',
                           title='Ride Duration Distribution',
@@ -212,8 +216,8 @@ def create_ride_duration_analysis(df, chart_type='distribution'):
         fig.update_layout(barmode='overlay')
     
     elif chart_type == 'scatter':
-        # 时长与近似距离的散点图
-        scatter_df = df[(df['ride_duration_minutes'] <= 120) & (df['distance_km'] <= 10)].sample(n=1000)  # 采样以提高性能
+        # 时长与近似距离的散点图 Ride duration vs Approximate distance scatter plot
+        scatter_df = df[(df['ride_duration_minutes'] <= 120) & (df['distance_km'] <= 10)].sample(n=1000)  # 采样以提高性能 Sample for performance
         fig = px.scatter(scatter_df, x='distance_km', y='ride_duration_minutes', 
                         color='member_casual',
                         title='Ride Duration vs Distance',
@@ -224,6 +228,7 @@ def create_ride_duration_analysis(df, chart_type='distribution'):
 
 def create_station_analysis_chart(df, station_type='popular_start_stations'):
     """创建站点分析图表"""
+    """Create station analysis chart"""
     
     if station_type == 'popular_start_stations':
         station_data = df['start_station_name'].value_counts().head(10).reset_index()
@@ -243,23 +248,24 @@ def create_station_analysis_chart(df, station_type='popular_start_stations'):
 
 def create_bubble_chart(df, bubble_type='station_activity'):
     """创建气泡图分析"""
-    
+    """Create bubble chart analysis"""
+
     if bubble_type == 'station_activity':
-        # 站点活动气泡图：开始次数 vs 结束次数
+        # 站点活动气泡图：开始次数 vs 结束次数 Station activity bubble chart: starts vs ends
         start_counts = df['start_station_name'].value_counts().reset_index()
         start_counts.columns = ['station_name', 'start_count']
         
         end_counts = df['end_station_name'].value_counts().reset_index()
         end_counts.columns = ['station_name', 'end_count']
         
-        # 合并数据
+        # 合并数据 merge data
         station_activity = pd.merge(start_counts, end_counts, on='station_name', how='outer').fillna(0)
         
-        # 获取前30个最活跃站点
+        # 获取前30个最活跃站点 get top 30 most active stations
         station_activity['total_activity'] = station_activity['start_count'] + station_activity['end_count']
         station_activity = station_activity.nlargest(30, 'total_activity')
         
-        # 计算净流量（开始-结束）
+        # 计算净流量（开始-结束） calculate net flow (starts - ends)
         station_activity['net_flow'] = station_activity['start_count'] - station_activity['end_count']
         
         fig = px.scatter(station_activity, 
@@ -278,7 +284,7 @@ def create_bubble_chart(df, bubble_type='station_activity'):
                         color_continuous_scale='RdBu',
                         size_max=60)
         
-        # 添加对角线参考线
+        # 添加对角线参考线 add diagonal reference line
         max_val = max(station_activity[['start_count', 'end_count']].max())
         fig.add_trace(go.Scatter(x=[0, max_val], y=[0, max_val], 
                                mode='lines', 
@@ -289,15 +295,15 @@ def create_bubble_chart(df, bubble_type='station_activity'):
         fig.update_layout(showlegend=True)
     
     elif bubble_type == 'duration_distance':
-        # 时长-距离气泡图
+        # 时长-距离气泡图 Ride duration vs Distance bubble chart
         bubble_df = df[(df['ride_duration_minutes'] <= 120) & 
                       (df['distance_km'] <= 10)].copy()
         
-        # 采样以避免过度绘制
+        # 采样以避免过度绘制 Sample to avoid overplotting
         if len(bubble_df) > 1000:
             bubble_df = bubble_df.sample(n=1000, random_state=42)
         
-        # 按用户类型分组计算平均速度和计数
+        # 按用户类型分组计算平均速度和计数 Group by user type to calculate average speed and count
         user_stats = bubble_df.groupby('member_casual').agg({
             'ride_duration_minutes': 'mean',
             'distance_km': 'mean',
@@ -305,7 +311,7 @@ def create_bubble_chart(df, bubble_type='station_activity'):
         }).reset_index()
         user_stats.columns = ['member_casual', 'avg_duration', 'avg_distance', 'count']
         
-        # 计算平均速度 (km/h)
+        # 计算平均速度 (km/h) Calculate average speed (km/h)
         user_stats['avg_speed_kmh'] = (user_stats['avg_distance'] / 
                                      (user_stats['avg_duration'] / 60))
         
@@ -324,7 +330,7 @@ def create_bubble_chart(df, bubble_type='station_activity'):
                         },
                         size_max=40)
         
-        # 添加速度注释
+        # 添加速度注释 Add speed annotations
         for i, row in user_stats.iterrows():
             fig.add_annotation(x=row['avg_distance'], y=row['avg_duration'],
                              text=f"{row['avg_speed_kmh']:.1f} km/h",
@@ -332,10 +338,10 @@ def create_bubble_chart(df, bubble_type='station_activity'):
                              yshift=10)
     
     elif bubble_type == 'time_usage_pattern':
-        # 时间使用模式气泡图
+        # 时间使用模式气泡图 Time usage pattern bubble chart
         time_pattern = df.groupby(['hour', 'member_casual', 'rideable_type']).size().reset_index(name='count')
         
-        # 取每个时段最常用的自行车类型
+        # 取每个时段最常用的自行车类型 Get the most used bike type for each hour and user type
         time_pattern = time_pattern.loc[time_pattern.groupby(['hour', 'member_casual'])['count'].idxmax()]
         
         fig = px.scatter(time_pattern,
@@ -359,16 +365,17 @@ def create_bubble_chart(df, bubble_type='station_activity'):
 
 def create_geographic_analysis(df, analysis_type='hourly_density'):
     """创建地理可视化 - 类似image.png的样式"""
+    """Create geographic visualization - similar to image.png style"""
     
-    # 过滤掉缺失坐标的记录
+    # 过滤掉缺失坐标的记录 Filter out records with missing coordinates
     geo_df = df.dropna(subset=['start_lat', 'start_lng']).copy()
     
     if analysis_type == 'hourly_density':
-        # 采样数据以避免过度绘制
+        # 采样数据以避免过度绘制 Sample data to avoid overplotting
         if len(geo_df) > 5000:
             geo_df = geo_df.sample(n=5000, random_state=42)
         
-        # 创建类似image.png的散点图，按小时着色
+        # 创建散点图，按小时着色 Create scatter plot colored by hour
         fig = px.scatter_mapbox(geo_df, 
                               lat='start_lat', 
                               lon='start_lng',
@@ -402,17 +409,17 @@ def create_advanced_geographic_chart(df, chart_type='bubble_map'):
     """创建高级地理图表"""
     
     if chart_type == 'bubble_map':
-        # 气泡地图：站点使用情况
+        # 气泡地图：站点使用情况 Bubble map: Station usage
         station_data = df.groupby(['start_station_name', 'start_lat', 'start_lng']).agg({
             'ride_id': 'count',
             'ride_duration_minutes': 'mean',
-            'member_casual': lambda x: (x == 'member').mean()  # 会员比例
+            'member_casual': lambda x: (x == 'member').mean()  # 会员比例 Member ratio
         }).reset_index()
         
         station_data.columns = ['station_name', 'lat', 'lng', 'ride_count', 'avg_duration', 'member_ratio']
         station_data = station_data.dropna().nlargest(100, 'ride_count')
         
-        # 创建气泡地图
+        # 创建气泡地图 Create bubble map
         fig = px.scatter_mapbox(station_data,
                               lat='lat',
                               lon='lng',
@@ -436,7 +443,7 @@ def create_advanced_geographic_chart(df, chart_type='bubble_map'):
                          coloraxis_colorbar=dict(title="Member Ratio"))
     
     elif chart_type == 'hexbin_map':
-        # 六边形分箱地图（需要足够的数据点）
+        # 六边形分箱地图（需要足够的数据点） Hexbin map (requires sufficient data points)
         hex_data = df[['start_lat', 'start_lng']].dropna()
         
         if len(hex_data) > 0:
@@ -450,7 +457,7 @@ def create_advanced_geographic_chart(df, chart_type='bubble_map'):
             
             fig.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
         else:
-            # 如果没有足够数据，返回空图表
+            # 如果没有足够数据，返回空图表 If insufficient data, return empty chart
             fig = go.Figure()
             fig.update_layout(title="Insufficient data for hexbin map")
     

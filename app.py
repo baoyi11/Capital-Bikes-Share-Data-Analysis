@@ -11,7 +11,7 @@ from utils.viz import (
     create_heatmap_analysis, create_bubble_chart, create_advanced_geographic_chart
 )
 
-# 页面配置
+# 页面配置 Page configuration
 st.set_page_config(
     page_title="Capital Bikeshare Data Analysis",
     page_icon="🚲",
@@ -19,7 +19,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 加载和缓存数据
+# 加载和缓存数据 Load and cache data
 @st.cache_data(show_spinner=False)
 def get_processed_data():
     df_raw = load_data()
@@ -27,20 +27,20 @@ def get_processed_data():
     tables = create_analysis_tables(df_processed)
     return df_raw, df_processed, tables
 
-# 主应用
+# 主应用 Main application
 def main():
     st.title("🚲 Capital Bikeshare Data Analysis")
     st.caption("Source: Capital Bikeshare Trip Data - October 2025 - Public Dataset")
     
-    # 加载数据
+    # 加载数据 Load data
     with st.spinner('Loading and processing data...'):
         raw_df, processed_df, analysis_tables = get_processed_data()
     
-    # 侧边栏筛选器
+    #  侧边栏筛选器 Sidebar filters
     with st.sidebar:
         st.header("🔍 Data Filters")
         
-        # 日期范围筛选
+        # 日期范围筛选 Date range filter
         min_date = processed_df['started_at'].dt.date.min()
         max_date = processed_df['started_at'].dt.date.max()
         date_range = st.date_input(
@@ -50,21 +50,21 @@ def main():
             max_value=max_date
         )
         
-        # 用户类型筛选
+        # 用户类型筛选  User type filter
         user_types = st.multiselect(
             "User Type",
             options=processed_df['member_casual'].unique(),
             default=processed_df['member_casual'].unique()
         )
         
-        # 自行车类型筛选
+        # 自行车类型筛选 Bike type filter
         bike_types = st.multiselect(
             "Bike Type",
             options=processed_df['rideable_type'].unique(),
             default=processed_df['rideable_type'].unique()
         )
         
-        # 时间段筛选
+        # 时间段筛选 Time of day filter
         time_ranges = st.multiselect(
             "Time of Day",
             options=['Early Morning (12-6am)', 'Morning (6-12pm)', 'Afternoon (12-6pm)', 'Evening (6-12am)'],
@@ -76,7 +76,7 @@ def main():
         st.metric("Total Rides", f"{len(processed_df):,}")
         st.metric("Members vs Casual", f"{len(processed_df[processed_df['member_casual']=='member']):,} / {len(processed_df[processed_df['member_casual']=='casual']):,}")
     
-    # 应用筛选器
+    # 应用筛选器 Apply filters
     filtered_df = processed_df.copy()
     
     if len(date_range) == 2:
@@ -91,7 +91,7 @@ def main():
     if bike_types:
         filtered_df = filtered_df[filtered_df['rideable_type'].isin(bike_types)]
     
-    # 导航
+    # 导航 Navigation
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 📖 Navigation")
     page = st.sidebar.radio("Go to", [
@@ -103,14 +103,14 @@ def main():
         "📈 Conclusions"
     ])
     
-    # 在侧边栏最下面添加Author信息和Logo
+    # 在侧边栏最下面添加Author信息和Logo Author info and logos at the bottom of sidebar
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 👨‍💻 Author Information")
     st.sidebar.markdown("**Author:** Baoyi Zhou")
     st.sidebar.markdown("**Email:** baoyi.zhou@efrei.net")
     st.sidebar.markdown("**GitHub:** https://github.com/baoyi11/Capital-Bikes-Share-Data-Analysis")
     st.sidebar.markdown("**Data Source:** [Capital Bikeshare System Data](https://capitalbikeshare.com/system-data)") 
-    # 添加两张图片作为logo
+    # 添加两张图片作为logo Add two images as logos
     col1, col2 = st.sidebar.columns(2)
     
     with col1:
@@ -125,7 +125,7 @@ def main():
         except:
             st.markdown("**eFrei Paris Panthéon-Assas Université**")
     
-    # 页面路由
+    # 页面路由 Page routing
     if page == "📊 Executive Summary":
         show_executive_summary(filtered_df, analysis_tables)
     elif page == "⏰ Time Analysis":
@@ -142,11 +142,11 @@ def main():
 def show_executive_summary(df, tables):
     st.header("📊 Executive Summary")
     
-    # KPI 指标
+    # KPI 指标 KPI Metrics
     st.subheader("Key Performance Indicators")
     create_kpi_metrics(df)
     
-    # 介绍
+    # 介绍 Introduction
     st.markdown("""
     ### 🎯 Analysis Overview
     
@@ -159,7 +159,7 @@ def show_executive_summary(df, tables):
     Understanding these patterns can help optimize bike distribution, marketing strategies, and service improvements.
     """)
     
-    # 数据质量信息
+    # 数据质量信息 Data Quality Information
     st.markdown("### 📋 Data Quality & Limitations")
     col1, col2, col3 = st.columns(3)
     
@@ -198,7 +198,7 @@ def show_time_analysis(df):
         st.plotly_chart(create_heatmap_analysis(df, 'hour_weekday'), use_container_width=True)
         st.plotly_chart(create_heatmap_analysis(df, 'member_casual_hourly'), use_container_width=True)
     
-    # 洞察
+    # 洞察 Insights
     st.markdown("""
     ### 💡 Key Time-Based Insights
     
@@ -226,7 +226,7 @@ def show_user_behavior(df):
         st.plotly_chart(create_ride_duration_analysis(df, 'distribution'), use_container_width=True)
         st.plotly_chart(create_member_comparison_chart(df, 'default'), use_container_width=True) # User Type Distribution
     
-    # 用户细分洞察
+    # 用户细分洞察 User Segmentation Insights
     st.markdown("""
     ### 🎯 User Segmentation Insights
     
@@ -244,7 +244,7 @@ def show_user_behavior(df):
 def show_geographic_insights(df):
     st.header("📍 Geographic Insights")
     
-    # 使用选项卡组织不同的地理可视化
+    # 使用选项卡组织不同的地理可视化 Organize different geographic visualizations using tabs
     tab1, tab2, tab3 = st.tabs([
         "🗺️ Station Map", 
         "🔥 Heatmaps", 
@@ -265,7 +265,7 @@ def show_geographic_insights(df):
     with tab2:
         st.subheader("Usage Pattern Heatmaps")
         
-        # 地理热力图
+        # 地理热力图 Geographic heatmaps
         st.plotly_chart(create_heatmap_analysis(df, 'station_popularity'), 
                       use_container_width=True)
         
@@ -284,7 +284,7 @@ def show_geographic_insights(df):
         st.plotly_chart(create_bubble_chart(df, 'station_activity'), 
                       use_container_width=True)
     
-    # 地理洞察分析
+    # 地理洞察分析  Geographic Insights Analysis
     st.markdown("""
     ### 🗺️ Geographic Patterns & Insights
     
@@ -302,7 +302,7 @@ def show_geographic_insights(df):
 def show_deep_dives(df):
     st.header("🔍 Deep Dive Analysis")
     
-    # 相关性分析
+    # 相关性分析 Correlation Analysis
     st.subheader("Ride Duration vs Distance Analysis")
     col1, col2 = st.columns([2, 1])
     
@@ -314,7 +314,7 @@ def show_deep_dives(df):
         st.metric("Median Duration", f"{df['ride_duration_minutes'].median():.1f} min")
         st.metric("Max Duration", f"{df['ride_duration_minutes'].max():.1f} min")
     
-    # 高级分析 - 使用选项卡组织
+    # 高级分析 - 使用选项卡组织 Advanced Analysis - Organized with tabs
     
     st.subheader("📈Bubble Chart Analysis")
     col1, col2 = st.columns(2)
@@ -355,7 +355,7 @@ def show_conclusions(df):
         - Improve electric bike distribution
         """)
     
-    # 建议
+    # 建议 Recommendations
     st.markdown("""
     ### 🎯 Strategic Recommendations
     
@@ -372,7 +372,7 @@ def show_conclusions(df):
        - Develop partnerships with local businesses
     """)
     
-    # 最终指标
+    # 最终指标 Final Metrics
     st.subheader("📊 Final Performance Summary")
     
     metrics_cols = st.columns(4)
