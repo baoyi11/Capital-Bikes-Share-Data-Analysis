@@ -127,17 +127,17 @@ def create_heatmap_analysis(df, heatmap_type='hour_weekday'):
         station_usage = station_usage.dropna().nlargest(50, 'count')  # 取前50个最繁忙站点 Take top 50 busiest stations
         
         fig = px.density_mapbox(station_usage, 
-                               lat='start_lat', 
-                               lon='start_lng', 
-                               z='count',
-                               radius=20,
-                               center=dict(lat=station_usage['start_lat'].mean(), 
-                                         lon=station_usage['start_lng'].mean()),
-                               zoom=10,
-                               mapbox_style="open-street-map",
-                               title='Station Usage Heatmap',
-                               hover_data={'start_station_name': True, 'count': True})
-        
+                       lat='start_lat', 
+                       lon='start_lng', 
+                       z='count',
+                       radius=20,
+                       center=dict(lat=station_usage['start_lat'].mean(), 
+                                 lon=station_usage['start_lng'].mean()),
+                       zoom=10,
+                       mapbox_style="open-street-map",
+                       title='Station Usage Heatmap',
+                       hover_data={'start_station_name': True, 'count': True},
+                       color_continuous_scale='hot')  # 改为高对比度色标 change to high-contrast color scale
         fig.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
     
     else:
@@ -377,20 +377,20 @@ def create_geographic_analysis(df, analysis_type='hourly_density'):
         
         # 创建散点图，按小时着色 Create scatter plot colored by hour
         fig = px.scatter_mapbox(geo_df, 
-                              lat='start_lat', 
-                              lon='start_lng',
-                              color='hour',
-                              color_continuous_scale='viridis',
-                              range_color=[0, 23],
-                              title='Ride Locations Colored by Hour',
-                              hover_data={
-                                  'start_station_name': True,
-                                  'hour': True,
-                                  'member_casual': True,
-                                  'rideable_type': True
-                              },
-                              mapbox_style="open-street-map",
-                              zoom=10)
+                        lat='start_lat', 
+                        lon='start_lng',
+                        color='hour',
+                        color_continuous_scale='rainbow',  # 彩虹色，对比强烈 rainbow colors for strong contrast
+                        range_color=[0, 23],
+                        title='Ride Locations Colored by Hour',
+                        hover_data={
+                            'start_station_name': True,
+                            'hour': True,
+                            'member_casual': True,
+                            'rideable_type': True
+                        },
+                        mapbox_style="open-street-map",
+                        zoom=10)
         
         fig.update_layout(
             margin={"r":0,"t":30,"l":0,"b":0},

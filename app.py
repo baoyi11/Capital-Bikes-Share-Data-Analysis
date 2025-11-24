@@ -109,6 +109,9 @@ def main():
     st.sidebar.markdown("**Author:** Baoyi Zhou")
     st.sidebar.markdown("**Email:** baoyi.zhou@efrei.net")
     st.sidebar.markdown("**GitHub:** https://github.com/baoyi11/Capital-Bikes-Share-Data-Analysis")
+    st.sidebar.markdown("**Course: Data Visualization 2025**")
+    st.sidebar.markdown("**Prof. Mano Mathew**")
+    st.sidebar.markdown("[Check out this LinkedIn](https://www.linkedin.com/in/manomathew/)", unsafe_allow_html=True)
     st.sidebar.markdown("**Data Source:** [Capital Bikeshare System Data](https://capitalbikeshare.com/system-data)") 
     # 添加两张图片作为logo Add two images as logos
     col1, col2 = st.sidebar.columns(2)
@@ -258,9 +261,6 @@ def show_geographic_insights(df):
             st.plotly_chart(map_chart, use_container_width=True)
         else:
             st.warning("Insufficient geographic data for mapping")
-        
-        st.subheader("Advanced Geographic Analysis")
-        st.plotly_chart(create_advanced_geographic_chart(df, 'bubble_map'), use_container_width=True)
     
     with tab2:
         st.subheader("Usage Pattern Heatmaps")
